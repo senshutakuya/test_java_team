@@ -1,52 +1,63 @@
 package com.kenshu.dao;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.kenshu.model.bean.UserBean;
-import com.kenshu.model.dto.UserDto;
 
 public class UserDao {
-    private Connection connection;
 
-    public UserDto findUserByLoginid(int loginid) {
-        UserDto userDto = new UserDto();
+    // JDBCドライバとデータベースURL
+    static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://localhost/kadai_java";
+
+    // データベースのユーザー名とパスワード
+    static final String USER = "root";
+    static final String PASS = "password";
+
+    // データベースにユーザーが登録されているか確認する処理(LoginServiceで使う)
+    public UserBean getUserByLoginIdAndPassword(int loginid, String password) {
+        Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        UserBean user = null;
 
         try {
-            String sql = "SELECT * FROM users WHERE loginid = ?";
-            stmt = connection.prepareStatement(sql);
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            // SQLクエリを準備
+            String sql = "SELECT * FROM users WHERE loginid = ? AND pass = ?";
+            stmt = conn.prepareStatement(sql);
             stmt.setInt(1, loginid);
+            stmt.setString(2, password);
+
+            // SQLクエリを実行し、結果を取得
             rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                int retrievedLoginId = rs.getInt("loginid");
-                String retrievedPassword = rs.getString("password");
-                int retrievedAuthCode = rs.getInt("authcode");
-                userDto.add(new UserBean(retrievedLoginId, retrievedPassword, retrievedAuthCode));
+            // 結果をUserBeanにマッピング
+            if (rs.next()) {
+                int authcode = rs.getInt("authcode");
+                user = new UserBean(loginid, password, authcode);
             }
-        } catch (SQLException e) {
+
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+            // 接続をクローズ
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
 
-        return userDto;
+        return user;
     }
 }
