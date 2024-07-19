@@ -46,26 +46,40 @@ public class LoginServlet extends HttpServlet {
 
                 // authcodeを取得してリダイレクト先を決定
                 int authcode = user.getAuthcode();
-                redirectToOperationScreen(response, authcode);
+                redirectToOperationScreen(request,response, authcode);
             } else {
                 // 認証失敗の場合の処理
                 request.setAttribute("error", "authentication_failed");
-                request.getRequestDispatcher("jsp/Login.jsp").forward(request, response);
+                request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
             }
+        } catch (NumberFormatException e) {
+            // ログインIDが整数に変換できない場合の処理
+            request.setAttribute("error", "invalid_loginid_format");
+            request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
         } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect("/jsp/Login.jsp?error=database_error");
+        	e.printStackTrace();
+            request.setAttribute("error", "database_error");
+            request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
         }
     }
 
-    private void redirectToOperationScreen(HttpServletResponse response, int authcode) throws IOException {
+    private void redirectToOperationScreen(HttpServletRequest request, HttpServletResponse response, int authcode) throws ServletException, IOException {
         // アクセス権限に応じて適切な画面にリダイレクトする処理
+        String redirectURL = null;
         if (authcode == 1) {
-            response.sendRedirect("jsp/stock_management.jsp");
+            System.out.println("authcodeは"+authcode);
+            redirectURL = request.getContextPath() + "/inventory_home";
         } else if (authcode == 2) {
-            response.sendRedirect("jsp/sales_management.jsp");
+            System.out.println("authcodeは"+authcode);
+            redirectURL = request.getContextPath() + "/sales_management";
         } else {
-            response.sendRedirect("jsp/access_denied.jsp");
+            // 認証失敗の場合の処理
+            System.out.println("test");
+            request.setAttribute("error", "authentication_failed");
+            request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
+            return; // リダイレクトする前に処理を終了するために return を使用します
         }
+//        ここでreidrectURLに対してリダイレクト
+        response.sendRedirect(redirectURL);
     }
 }

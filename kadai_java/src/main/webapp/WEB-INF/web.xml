@@ -19,4 +19,34 @@
     <servlet-name>LoginServlet</servlet-name>
     <url-pattern>/LoginServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>InventoryServlet</display-name>
+    <servlet-name>InventoryServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.InventoryServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InventoryServlet</servlet-name>
+    <url-pattern>/InventoryServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>InventoryAdd</display-name>
+    <servlet-name>InventoryAdd</servlet-name>
+    <servlet-class>com.kenshu.controller.InventoryAdd</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InventoryAdd</servlet-name>
+    <url-pattern>/InventoryAdd</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>InventoryAddConfirmServlet</display-name>
+    <servlet-name>InventoryAddConfirmServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.InventoryAddConfirmServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InventoryAddConfirmServlet</servlet-name>
+    <url-pattern>/InventoryAddConfirmServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

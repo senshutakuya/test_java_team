@@ -1,10 +1,23 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
     <title>Login</title>
 </head>
 <body>
     <h2>Login</h2>
+    <p>
+        10000001<br>
+        password1<br><br>
+        
+        10000002<br>
+        password2<br><br>
+        
+        エラー用<br>
+        10000003<br>
+        password3<br>
+    </p>
     <form action="login" method="post">
         <label for="loginid">Login ID:</label>
         <input type="text" id="loginid" name="loginid" required><br>
@@ -12,8 +25,12 @@
         <input type="password" id="password" name="password" required><br>
         <input type="submit" value="Login">
     </form>
-    <% if (request.getParameter("error") != null) { %>
-        <p style="color:red;">Invalid login ID or password</p>
+    
+    <% 
+    String error = (String) request.getAttribute("error");
+    if (error != null) { 
+    %>
+        <p style="color:red;"><%= error %></p>
     <% } %>
 </body>
 </html>
