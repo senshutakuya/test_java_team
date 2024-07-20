@@ -19,6 +19,26 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	HttpSession session = request.getSession(false);
+        System.out.println("メソッドgetです！セッション変数の中身は"+ session);
+
+        if (session != null && session.getAttribute("user") != null) {
+            try {
+            	UserBean user = (UserBean) session.getAttribute("user"); // 型キャスト
+                System.out.println("デバッグリダイレクト");
+                int authcode = user.getAuthcode();
+                redirectToOperationScreen(request, response, authcode);
+                return; // リダイレクト後の処理を防ぐために return を使用します
+            } catch(Exception e){
+                System.out.println("デバッグです");
+                System.out.println(e);
+                request.getRequestDispatcher("/jsp/error.jsp").forward(request, response);
+            }
+        } else {
+            System.out.println("失敗、セッション変数の中身は"+ session);
+            request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
+        }
+    
         request.getRequestDispatcher("jsp/Login.jsp").forward(request, response);
     }
 
@@ -49,16 +69,16 @@ public class LoginServlet extends HttpServlet {
                 redirectToOperationScreen(request,response, authcode);
             } else {
                 // 認証失敗の場合の処理
-                request.setAttribute("error", "authentication_failed");
+                request.setAttribute("error", "認証失敗");
                 request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
             // ログインIDが整数に変換できない場合の処理
-            request.setAttribute("error", "invalid_loginid_format");
+            request.setAttribute("error", "ログインIDは数値で入力してください");
             request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
         } catch (Exception e) {
         	e.printStackTrace();
-            request.setAttribute("error", "database_error");
+            request.setAttribute("error", "恐れ入りますがIDとパスワードをご確認の上もう一度やり直してください");
             request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
         }
     }
@@ -75,7 +95,7 @@ public class LoginServlet extends HttpServlet {
         } else {
             // 認証失敗の場合の処理
             System.out.println("test");
-            request.setAttribute("error", "authentication_failed");
+            request.setAttribute("error", "認証失敗");
             request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
             return; // リダイレクトする前に処理を終了するために return を使用します
         }

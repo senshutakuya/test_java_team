@@ -63,10 +63,88 @@ public class StockItemDao {
 
         return stockItemDto;
     }
+    
+//    データベースに在庫を追加する処理
+    public StockItemDto addStock(String name, int price, int stock) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        PreparedStatement stockStmt = null;
+        PreparedStatement itemStmt = null;
+        ResultSet rs = null;
+        StockItemDto stockItemDto = new StockItemDto();
 
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            
+         // トランザクションを開始
+            conn.setAutoCommit(false);
 
+            // SQLクエリを準備
+//          // 在庫テーブルに在庫数を追加
+            String stockSql = "INSERT INTO stocks (stock) VALUES (?)";
+//            RETURN_GENERATED_KEYSでstock_idを取得
+            stockStmt = conn.prepareStatement(stockSql, PreparedStatement.RETURN_GENERATED_KEYS);
+            stockStmt.setInt(1, stock);
+            stockStmt.executeUpdate();
+
+           
+            int stockId = 0;
+            // 自動生成された在庫IDを取得
+            try (ResultSet generatedKeys = stockStmt.getGeneratedKeys()) {
+//            	もしあったらマッピング
+                if (generatedKeys.next()) {
+                    stockId = generatedKeys.getInt(1);
+//                結果が無かったら
+                } else {
+                    throw new SQLException("在庫IDの取得に失敗しました");
+                }
+            }
+
+            // 商品テーブルに商品を追加
+            String itemSql = "INSERT INTO items (name, price, stock_id) VALUES (?, ?, ?)";
+            stmt = conn.prepareStatement(itemSql);
+            stmt.setString(1, name);
+            stmt.setInt(2, price);
+            stmt.setInt(3, stockId);
+            stmt.executeUpdate();
+
+         // トランザクションをコミット
+            conn.commit();
+         // 更新成功のメッセージを出力
+            System.out.println("在庫が正常に追加されました");
+
+        } catch (SQLException | ClassNotFoundException e) {
+            // エラーが発生した場合、トランザクションをロールバック
+//        	接続が確立されているなら
+            if (conn != null) {
+                try {
+//                	ロールバック
+                    conn.rollback();
+//                 データベースとロールバックのエラーの時
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+        } finally {
+            // 接続をクローズ
+            try {
+                if (rs != null) rs.close();
+                if (stockStmt != null) stockStmt.close();
+                if (itemStmt != null) itemStmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return stockItemDto;
+    }
 
 }
+
 
 
 
