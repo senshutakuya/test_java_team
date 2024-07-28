@@ -19,24 +19,28 @@
         List<StockItem> items = itemList.getStockItemList();
     %>
     <!-- デバッグ情報 -->
-    <h2>デバッグ情報</h2>
-    <pre>
-    itemsの中身は: <%= items.toString() %>
-    </pre>
-
     <table border="1">
         <tr>
-            <th>ID</th>
             <th>商品名</th>
             <th>価格</th>
             <th>在庫数</th>
+            <th>編集</th>
+            <th>削除</th>
         </tr>
         <% for (StockItem item : items) { %>
             <tr>
-                <td><%= item.getId() %></td>
-                <td><%= item.getName() %></td>
-                <td><%= item.getPrice() %></td>
-                <td><%= item.getStock() %></td>
+                <form action="<%= request.getContextPath() %>/inventory/delete" method="post">
+                    <td><%= item.getName() %></td>
+                    <td><%= item.getPrice() %></td>
+                    <td><%= item.getStock() %></td>
+                    <td>
+                        <button type="button" onclick="location.href='<%= request.getContextPath() %>/inventory/edit?id=<%= item.getId() %>'">編集</button>
+                    </td>
+                    <td>
+                        <input type="hidden" name="id" value="<%= item.getId() %>" />
+                        <button type="submit">削除</button>
+                    </td>
+                </form>
             </tr>
         <% } %>
     </table>
@@ -44,7 +48,7 @@
         <p>在庫商品が見つかりませんでした。</p>
     <% } %>
     
-    <form action="inventory/add" method="get">
+    <form action="<%= request.getContextPath() %>/inventory/add" method="get">
         <button type="submit">商品追加</button>
     </form>
 

@@ -49,4 +49,14 @@
     <servlet-name>InventoryAddConfirmServlet</servlet-name>
     <url-pattern>/InventoryAddConfirmServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description>在庫の編集サーブレット</description>
+    <display-name>InventoryEditServlet</display-name>
+    <servlet-name>InventoryEditServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.InventoryEditServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InventoryEditServlet</servlet-name>
+    <url-pattern>/InventoryEditServlet</url-pattern>
+  </servlet-mapping>
 </web-app>
