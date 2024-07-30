@@ -16,6 +16,11 @@ public class StockItemDao {
     // データベースのユーザー名とパスワード
     static final String USER = "root";
     static final String PASS = "password";
+    
+    public Connection getConnection() throws SQLException, ClassNotFoundException {
+        Class.forName(JDBC_DRIVER);
+        return DriverManager.getConnection(DB_URL, USER, PASS);
+    }
 
     // データベースに確認する処理(LoginServiceで使う)
     public StockItemDto getAll() {
@@ -283,6 +288,138 @@ public class StockItemDao {
             }
         }
     }
+
+
+
+//    item_idからstock_idの取得
+	public int findStockIdByItemId(int items_id) {
+		Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int stock_id = 0 ;
+        
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            // SQLクエリを準備
+            String sql = "SELECT stock_id FROM items WHERE id = ?";
+            stmt = conn.prepareStatement(sql);
+//            引数からidをセット
+            stmt.setInt(1, items_id);
+
+            // SQLクエリを実行し、結果を取得
+            rs = stmt.executeQuery();
+         // 結果をStockItemにマッピング
+            if (rs.next()) {
+//            	stock_idをマッピング
+                stock_id = rs.getInt("stock_id");
+                
+
+            }
+
+        }catch (SQLException | ClassNotFoundException e) {
+//        	eを標準出力
+            e.printStackTrace();
+        } finally {
+            // 接続をクローズ
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+//            	eを標準出力
+                e.printStackTrace();
+            }
+        }
+		return stock_id;
+		
+	}
+
+
+//	item_idからitemsテーブルのデータを削除
+	public void deleteItemByItemId(int items_id) {
+	    Connection conn = null;
+	    PreparedStatement stmt = null;
+	    
+	    try {
+	        // JDBCドライバをロードし、データベースに接続
+	        Class.forName(JDBC_DRIVER);
+	        conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+	        // SQLクエリを準備
+	        String sql = "DELETE FROM items WHERE id = ?";
+	        stmt = conn.prepareStatement(sql);
+	        // 引数からidをセット
+	        stmt.setInt(1, items_id);
+
+	        // SQLクエリを実行
+	        int rowsAffected = stmt.executeUpdate();
+
+	        // オプション：削除が成功したかどうかを確認
+	        if (rowsAffected > 0) {
+	            System.out.println("削除に成功しました。削除された行数: " + rowsAffected);
+	        } else {
+	            System.out.println("削除対象が見つかりませんでした。");
+	        }
+	    } catch (SQLException | ClassNotFoundException e) {
+	        // eを標準出力
+	        e.printStackTrace();
+	    } finally {
+	        // 接続をクローズ
+	        try {
+	            if (stmt != null) stmt.close();
+	            if (conn != null) conn.close();
+	        } catch (SQLException e) {
+	            // eを標準出力
+	            e.printStackTrace();
+	        }
+	    }
+	}
+
+
+
+
+	public void deleteStockByStockId(int stock_id) {
+	    Connection conn = null;
+	    PreparedStatement stmt = null;
+	    
+	    try {
+	        // JDBCドライバをロードし、データベースに接続
+	        Class.forName(JDBC_DRIVER);
+	        conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+	        // SQLクエリを準備
+	        String sql = "DELETE FROM stocks WHERE id = ?";
+	        stmt = conn.prepareStatement(sql);
+	        // 引数からidをセット
+	        stmt.setInt(1, stock_id);
+
+	        // SQLクエリを実行
+	        int rowsAffected = stmt.executeUpdate();
+
+	        // オプション：削除が成功したかどうかを確認
+	        if (rowsAffected > 0) {
+	            System.out.println("削除に成功しました。削除された行数: " + rowsAffected);
+	        } else {
+	            System.out.println("削除対象が見つかりませんでした。");
+	        }
+	    } catch (SQLException | ClassNotFoundException e) {
+	        // eを標準出力
+	        e.printStackTrace();
+	    } finally {
+	        // 接続をクローズ
+	        try {
+	            if (stmt != null) stmt.close();
+	            if (conn != null) conn.close();
+	        } catch (SQLException e) {
+	            // eを標準出力
+	            e.printStackTrace();
+	        }
+	    }
+	}
+
 
     
     

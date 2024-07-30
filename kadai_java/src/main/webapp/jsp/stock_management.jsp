@@ -29,7 +29,7 @@
         </tr>
         <% for (StockItem item : items) { %>
             <tr>
-                <form action="<%= request.getContextPath() %>/inventory/delete" method="post">
+                <form action="<%= request.getContextPath() %>/inventory/delete?id=<%= item.getId() %>" method="post">
                     <td><%= item.getName() %></td>
                     <td><%= item.getPrice() %></td>
                     <td><%= item.getStock() %></td>
