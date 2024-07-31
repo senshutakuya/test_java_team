@@ -12,6 +12,8 @@
     <title>在庫管理</title>
 </head>
 <body>
+	<!-- logout_header.jspのインクルード -->
+	<%@ include file="logout_header.jsp" %>
     <h1>在庫一覧</h1>
     
     <% 

@@ -69,4 +69,24 @@
     <servlet-name>InventoryDeleteServlet</servlet-name>
     <url-pattern>/InventoryDeleteServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>LogoutServlet</display-name>
+    <servlet-name>LogoutServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.LogoutServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LogoutServlet</servlet-name>
+    <url-pattern>/LogoutServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>LogoutSuccessServlet</display-name>
+    <servlet-name>LogoutSuccessServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.LogoutSuccessServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LogoutSuccessServlet</servlet-name>
+    <url-pattern>/LogoutSuccessServlet</url-pattern>
+  </servlet-mapping>
 </web-app>
