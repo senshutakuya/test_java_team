@@ -89,4 +89,24 @@
     <servlet-name>LogoutSuccessServlet</servlet-name>
     <url-pattern>/LogoutSuccessServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>SalesServlet</display-name>
+    <servlet-name>SalesServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.SalesServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SalesServlet</servlet-name>
+    <url-pattern>/SalesServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>カートにいれる処理</description>
+    <display-name>OrderAddServlet</display-name>
+    <servlet-name>OrderAddServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.OrderAddServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>OrderAddServlet</servlet-name>
+    <url-pattern>/OrderAddServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

@@ -420,9 +420,43 @@ public class StockItemDao {
 	    }
 	}
 
+	
+
+
+	
+//	在庫から注文数を引く	
+	public void decrementStock(Integer stockId, int quantity) {
+	    String checkSql = "SELECT stock FROM stocks WHERE id = ?";
+	    String updateSql = "UPDATE stocks SET stock = ? WHERE id = ?";
+	    
+	    try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+	         PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+	         PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+	        
+	        // 在庫がどの位あるのかチェック
+	        checkStmt.setInt(1, stockId);
+	        try (ResultSet rs = checkStmt.executeQuery()) {
+	            if (rs.next()) {
+	                int currentStock = rs.getInt("stock");
+	                if (currentStock >= quantity) {
+	                    // 在庫が十分にある場合にのみ更新
+	                    updateStmt.setInt(1, currentStock - quantity);
+	                    updateStmt.setInt(2, stockId);
+	                    updateStmt.executeUpdate();
+	                } else {
+	                    throw new SQLException("在庫が不足しています。");
+	                }
+	            } else {
+	                throw new SQLException("指定された在庫IDが見つかりません。");
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
 
     
-    
+
     
     
     

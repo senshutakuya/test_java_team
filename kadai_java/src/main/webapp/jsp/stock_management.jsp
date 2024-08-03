@@ -13,6 +13,7 @@
 </head>
 <body>
 	<!-- logout_header.jspのインクルード -->
+	<h2>在庫管理者</h2>
 	<%@ include file="logout_header.jsp" %>
     <h1>在庫一覧</h1>
     
