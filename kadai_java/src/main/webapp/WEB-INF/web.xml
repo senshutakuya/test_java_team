@@ -109,4 +109,14 @@
     <servlet-name>OrderAddServlet</servlet-name>
     <url-pattern>/OrderAddServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description>注文確認ページ</description>
+    <display-name>OrderCheckServlet</display-name>
+    <servlet-name>OrderCheckServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.OrderCheckServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>OrderCheckServlet</servlet-name>
+    <url-pattern>/OrderCheckServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

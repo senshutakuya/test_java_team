@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import com.kenshu.dao.OrderDao;
 import com.kenshu.dao.StockItemDao;
 import com.kenshu.model.bean.UserBean;
+import com.kenshu.model.dto.OrderItemDto;
 
 public class OrderService {
 
@@ -69,4 +70,10 @@ public class OrderService {
             System.err.println("注文処理中にエラーが発生しました: " + e.getMessage());
         }
     }
+
+	public static OrderItemDto list(UserBean user) {
+		// user_idを取得
+        int userId = user.getLoginid();
+		return OrderDao.list(userId);
+	}
 }

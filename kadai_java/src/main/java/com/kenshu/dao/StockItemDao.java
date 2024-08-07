@@ -339,84 +339,22 @@ public class StockItemDao {
 
 
 //	item_idからitemsテーブルのデータを削除
-	public void deleteItemByItemId(int items_id) {
-	    Connection conn = null;
-	    PreparedStatement stmt = null;
-	    
-	    try {
-	        // JDBCドライバをロードし、データベースに接続
-	        Class.forName(JDBC_DRIVER);
-	        conn = DriverManager.getConnection(DB_URL, USER, PASS);
-
-	        // SQLクエリを準備
-	        String sql = "DELETE FROM items WHERE id = ?";
-	        stmt = conn.prepareStatement(sql);
-	        // 引数からidをセット
-	        stmt.setInt(1, items_id);
-
-	        // SQLクエリを実行
-	        int rowsAffected = stmt.executeUpdate();
-
-	        // オプション：削除が成功したかどうかを確認
-	        if (rowsAffected > 0) {
-	            System.out.println("削除に成功しました。削除された行数: " + rowsAffected);
-	        } else {
-	            System.out.println("削除対象が見つかりませんでした。");
-	        }
-	    } catch (SQLException | ClassNotFoundException e) {
-	        // eを標準出力
-	        e.printStackTrace();
-	    } finally {
-	        // 接続をクローズ
-	        try {
-	            if (stmt != null) stmt.close();
-	            if (conn != null) conn.close();
-	        } catch (SQLException e) {
-	            // eを標準出力
-	            e.printStackTrace();
-	        }
+	public void deleteItemByItemId(int itemId, Connection conn) throws SQLException {
+	    String deleteSql = "DELETE FROM items WHERE id = ?";
+	    try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+	        deleteStmt.setInt(1, itemId);
+	        deleteStmt.executeUpdate();
 	    }
 	}
 
 
 
 
-	public void deleteStockByStockId(int stock_id) {
-	    Connection conn = null;
-	    PreparedStatement stmt = null;
-	    
-	    try {
-	        // JDBCドライバをロードし、データベースに接続
-	        Class.forName(JDBC_DRIVER);
-	        conn = DriverManager.getConnection(DB_URL, USER, PASS);
-
-	        // SQLクエリを準備
-	        String sql = "DELETE FROM stocks WHERE id = ?";
-	        stmt = conn.prepareStatement(sql);
-	        // 引数からidをセット
-	        stmt.setInt(1, stock_id);
-
-	        // SQLクエリを実行
-	        int rowsAffected = stmt.executeUpdate();
-
-	        // オプション：削除が成功したかどうかを確認
-	        if (rowsAffected > 0) {
-	            System.out.println("削除に成功しました。削除された行数: " + rowsAffected);
-	        } else {
-	            System.out.println("削除対象が見つかりませんでした。");
-	        }
-	    } catch (SQLException | ClassNotFoundException e) {
-	        // eを標準出力
-	        e.printStackTrace();
-	    } finally {
-	        // 接続をクローズ
-	        try {
-	            if (stmt != null) stmt.close();
-	            if (conn != null) conn.close();
-	        } catch (SQLException e) {
-	            // eを標準出力
-	            e.printStackTrace();
-	        }
+	public void deleteStockByStockId(int stockId, Connection conn) throws SQLException {
+	    String deleteSql = "DELETE FROM stocks WHERE id = ?";
+	    try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+	        deleteStmt.setInt(1, stockId);
+	        deleteStmt.executeUpdate();
 	    }
 	}
 

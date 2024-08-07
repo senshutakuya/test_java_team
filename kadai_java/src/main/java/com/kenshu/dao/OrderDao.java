@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.kenshu.model.bean.OrderItem;
+import com.kenshu.model.dto.OrderItemDto;
+
 public class OrderDao {
 
     // JDBCドライバとデータベースURL
@@ -119,6 +122,77 @@ public class OrderDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    
+    
+	public static OrderItemDto list(int userId) {
+		Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+//      ArryListorderItemDtoを初期化
+        OrderItemDto orderItemDto = new OrderItemDto();
+
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            // SQLクエリを準備
+            String sql = "SELECT o.id, i.name, i.price, o.quantity, s.stock FROM orders o " +
+                    "JOIN items i ON o.item_id = i.id " +
+                    "JOIN stocks s ON o.stock_id = s.id WHERE o.user_id = ?";
+            stmt = conn.prepareStatement(sql);
+//          対象のuserIdをセット
+            stmt.setInt(1, userId);
+
+            // SQLクエリを実行し、結果を取得
+            rs = stmt.executeQuery();
+
+            // 結果をStockItemにマッピング
+//            whileでデータがある限り続ける
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                int price = rs.getInt("price");
+                int quantity = rs.getInt("quantity");
+                int stock = rs.getInt("stock");
+                
+//              一件ずつitem変数に格納
+                OrderItem item = new OrderItem(id, name, price, quantity, stock);
+//              ArrayListに対象のitemオブジェクトを追加していく
+                orderItemDto.add(item);
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            // 接続をクローズ
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return orderItemDto;
+    }
+
+	
+	
+	
+	
+	
+	
+//	itemIdを基にorderの情報を消す
+	public void deleteOrderByItemId(int itemId, Connection conn) throws SQLException {
+        String deleteSql = "DELETE FROM orders WHERE item_id = ?";
+        try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+            deleteStmt.setInt(1, itemId);
+            deleteStmt.executeUpdate();
         }
     }
 
