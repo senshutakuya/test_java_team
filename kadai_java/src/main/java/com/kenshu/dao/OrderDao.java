@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.kenshu.model.bean.OrderItem;
 import com.kenshu.model.dto.OrderItemDto;
@@ -195,5 +197,43 @@ public class OrderDao {
             deleteStmt.executeUpdate();
         }
     }
+	
+
+	// orderIdを基にユーザーのカート情報を削除
+    public Map<String, Integer> deleteUserCartByItemid(int userId, int orderId, Connection conn) throws SQLException {
+        String selectSql = "SELECT quantity, stock_id FROM orders WHERE user_id = ? AND id = ?";
+        String deleteSql = "DELETE FROM orders WHERE user_id = ? AND id = ?";
+
+        int quantity = 0;
+        int stockId = 0;
+
+        // まず削除対象のquantityとstockIdを取得する
+        try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+            selectStmt.setInt(1, userId);
+            selectStmt.setInt(2, orderId);
+
+            try (ResultSet rs = selectStmt.executeQuery()) {
+                if (rs.next()) {
+                    quantity = rs.getInt("quantity");
+                    stockId = rs.getInt("stock_id");
+                }
+            }
+        }
+
+        // 次に削除処理を行う
+        try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+            deleteStmt.setInt(1, userId);
+            deleteStmt.setInt(2, orderId);
+            deleteStmt.executeUpdate();
+        }
+
+        // quantityとstockIdをMapに格納して返す
+        Map<String, Integer> result = new HashMap<>();
+        result.put("quantity", quantity);
+        result.put("stockId", stockId);
+        return result;
+    }
+
+
 
 }

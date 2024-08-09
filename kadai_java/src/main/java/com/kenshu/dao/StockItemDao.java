@@ -393,6 +393,24 @@ public class StockItemDao {
 	    }
 	}
 
+	
+	
+	// 在庫数を増やすメソッド
+    public void incrementStock(int stockId, int quantity) throws SQLException, ClassNotFoundException {
+        String updateSql = "UPDATE stocks SET stock = stock + ? WHERE id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+
+            // パラメータを設定
+            updateStmt.setInt(1, quantity);
+            updateStmt.setInt(2, stockId);
+
+            // SQLクエリを実行
+            updateStmt.executeUpdate();
+        }
+    }
+
     
 
     
