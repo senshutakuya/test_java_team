@@ -61,8 +61,8 @@ public class OrderDeleteServlet extends HttpServlet {
                 OrderService orderService = new OrderService();
                 orderService.cartDelete(user, ordersIdStr);
 
-                // 成功した場合、注文管理者のホームページにリダイレクト
-                response.sendRedirect(request.getContextPath() + "/sales_management");
+                // 成功した場合、カート情報にリダイレクト
+                response.sendRedirect(request.getContextPath() + "/order/check");
 
             } catch (Exception e) {
                 e.printStackTrace(); // スタックトレースを出力

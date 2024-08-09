@@ -7,6 +7,8 @@
 <head>
     <meta charset="UTF-8">
     <title>注文管理</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQueryの読み込み -->
+    <script src="<%= request.getContextPath() %>/js/calculateTotal.js"></script> <!-- JavaScriptファイルの読み込み -->
 </head>
 <body>
     <h2>注文管理者</h2>    
@@ -56,7 +58,7 @@
         <p>注文商品が見つかりませんでした。</p>
     <% } %>
     
-    <h3>合計金額</h3>
+    <h3 id="totalAmount">合計金額: 0 円</h3>
     
     <form action="<%= request.getContextPath() %>/order/confirm" method="post">
         <button type="submit">注文確定</button>
