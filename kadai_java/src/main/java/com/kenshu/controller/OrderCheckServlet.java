@@ -1,7 +1,11 @@
 package com.kenshu.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import com.kenshu.model.bean.OrderItem;
 import com.kenshu.model.bean.UserBean;
 import com.kenshu.model.dto.OrderItemDto;
 import com.kenshu.service.OrderService;
@@ -31,9 +35,43 @@ public class OrderCheckServlet extends HttpServlet {
             try {
             	// セッションからUserBeanオブジェクトを取得
                 UserBean user = (UserBean) session.getAttribute("user");
-                // 対象ユーザーの注文を取ってくる処理
+                
+             // 対象ユーザーの注文を取ってくる処理
             	OrderItemDto itemList = OrderService.list(user);
-        		request.setAttribute("itemList", itemList);
+            	request.setAttribute("itemList", itemList);
+            	
+            	List<OrderItem> items = itemList.getOrderItemList();
+                
+                @SuppressWarnings("unchecked")
+                Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
+                System.out.println("new cart contents: " + cart);
+                if (cart == null) {
+                    // セッションcartの初期化
+                    cart = new HashMap<>();
+                 // itemListの情報をもとに注文情報をcartに格納
+                    for (OrderItem item : items) {
+                        int OrderId = item.getId();
+                        int quantity = item.getQuantity();
+                        
+                     // カートに数量をセット（既存の数量を上書き）
+                        cart.put(OrderId, quantity);
+                    }
+                }
+                
+                
+                
+                
+                
+                session.setAttribute("cart", cart);
+             // 更新後のカート内容をログに出力
+                System.out.println("get cart contents: " + cart);
+                
+                
+            	
+            	
+            	
+            	 
+        		
                 // 成功した場合、注文管理者のホームページにリダイレクト
             	request.getRequestDispatcher("/jsp/order_cart.jsp").forward(request, response);
 

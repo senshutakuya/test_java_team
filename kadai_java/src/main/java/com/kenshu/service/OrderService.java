@@ -104,4 +104,20 @@ public class OrderService {
             System.err.println("接続エラーが発生しました: " + e.getMessage());
         }
     }
+
+    
+ // セッションのカートからアイテムを削除
+	public Map<Integer, Integer> cartUpdate(Map<Integer, Integer> cart, String ordersIdStr, String quantityStr) {
+		// アイテムID文字列を整数に変換
+        int orderId = Integer.parseInt(ordersIdStr);
+     // 注文数の文字列を整数に変換
+        int quantity = Integer.parseInt(ordersIdStr);
+        
+        cart.put(orderId, quantity);
+//      カートからorderIdを基に対象のデータをセッションから削除
+        cart.remove(orderId);
+        
+        return cart;
+		
+	}
 }

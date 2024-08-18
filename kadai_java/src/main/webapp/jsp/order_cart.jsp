@@ -1,14 +1,33 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.kenshu.model.dto.OrderItemDto" %>
 <%@ page import="com.kenshu.model.bean.OrderItem" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Map.Entry" %>
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>注文管理</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQueryの読み込み -->
-    <script src="<%= request.getContextPath() %>/js/calculateTotal.js"></script> <!-- JavaScriptファイルの読み込み -->
+    <!-- jQueryライブラリをCDNから読み込む -->
+ 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function updateQuantity(itemId) {
+            var quantity = document.getElementById('quantity-' + itemId).value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '<%= request.getContextPath() %>/order/updateQuantity', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    console.log('Quantity updated successfully');
+                }
+            };
+            xhr.send('id=' + itemId + '&quantity=' + quantity);
+        }
+    </script>
+    <!-- 外部のcalculateTotal.jsファイルを読み込む -->
+	 <script src="<%= request.getContextPath() %>/js/calculateTotal.js"></script> 
+    
 </head>
 <body>
     <h2>注文管理者</h2>    
@@ -16,7 +35,10 @@
     <h1>カート商品一覧</h1>
     
     <% 
+    /* データベースの情報を取得 */
     OrderItemDto itemList = (OrderItemDto) request.getAttribute("itemList");
+    /* セッションのカート情報を取得 */
+    Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
     if (itemList != null && itemList.size() > 0) { 
     %>
     <table border="1">
@@ -29,18 +51,17 @@
         <% for (int i = 0; i < itemList.size(); i++) {
             OrderItem item = itemList.get(i);
             int currentQuantity = item.getQuantity(); // 現在の注文数を取得
+            int cartQuantity = (cart != null && cart.containsKey(item.getId())) ? cart.get(item.getId()) : currentQuantity;
         %>
             <tr>
                 <form action="<%= request.getContextPath() %>/order/delete?id=<%= item.getId() %>" method="post">
                     <td><%= item.getName() %></td>
                     <td><%= item.getPrice() %></td>
                     <td>
-                        <select id="quantity" name="quantity">
+                        <select id="quantity-<%= item.getId() %>" name="quantity" onchange="updateQuantity(<%= item.getId() %>)">
                             <% 
-                                // 在庫数に基づいて<select>ボックスのオプションを生成
-                                for (int j = 1; j <= item.getStock()+currentQuantity; j++) {
-                                    // 現在の注文数がオプションの値と一致する場合、選択状態にする
-                                    boolean selected = (j == currentQuantity);
+                                for (int j = 1; j <= item.getStock(); j++) {
+                                    boolean selected = (j == cartQuantity);
                                     out.println("<option value='" + j + "'" + (selected ? " selected" : "") + ">" + j + "</option>");
                                 }
                             %>
@@ -60,9 +81,18 @@
     
     <h3 id="totalAmount">合計金額: 0 円</h3>
     
+    
+    <form action="<%= request.getContextPath() %>/sales_management" method="get">
+        <button type="submit">戻る</button>
+    </form>
+    
     <form action="<%= request.getContextPath() %>/order/confirm" method="post">
         <button type="submit">注文確定</button>
     </form>
 
+ <!-- ページ読み込み時に合計金額を計算 -->
+	<script>
+    	calculateTotal()
+    </script>
 </body>
 </html>

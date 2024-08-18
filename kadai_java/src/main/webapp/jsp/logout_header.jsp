@@ -5,11 +5,11 @@
 <html>
 <head>
     <title>My Application</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+<!--     <link rel="stylesheet" type="text/css" href="styles.css"> -->
 </head>
 <body>
     <header>
-        <form action="logout" method="post">
+        <form action="<%= request.getContextPath() %>/logout" method="post">
             <button type="submit">Logout</button>
         </form>
     </header>

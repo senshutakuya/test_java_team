@@ -129,4 +129,14 @@
     <servlet-name>OrderDeleteServlet</servlet-name>
     <url-pattern>/OrderDeleteServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>OrderUpdateQuantityServlet</display-name>
+    <servlet-name>OrderUpdateQuantityServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.OrderUpdateQuantityServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>OrderUpdateQuantityServlet</servlet-name>
+    <url-pattern>/OrderUpdateQuantityServlet</url-pattern>
+  </servlet-mapping>
 </web-app>
