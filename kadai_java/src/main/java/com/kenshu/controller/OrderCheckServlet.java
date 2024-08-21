@@ -45,7 +45,7 @@ public class OrderCheckServlet extends HttpServlet {
                 @SuppressWarnings("unchecked")
                 Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
                 System.out.println("new cart contents: " + cart);
-                if (cart == null) {
+                if (cart == null || cart.isEmpty()) {
                     // セッションcartの初期化
                     cart = new HashMap<>();
                  // itemListの情報をもとに注文情報をcartに格納

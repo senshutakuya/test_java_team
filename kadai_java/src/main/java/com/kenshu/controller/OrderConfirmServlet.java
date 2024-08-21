@@ -18,24 +18,25 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * Servlet implementation class OrderDeleteServlet
+ * Servlet implementation class OrderConfirmServlet
  */
-@WebServlet("/order/delete")
-public class OrderDeleteServlet extends HttpServlet {
+@WebServlet("/order/confirm")
+public class OrderConfirmServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+      
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// セッションからユーザの認証を確認
+    	// セッションからユーザの認証を確認
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("user") != null) {
             try {
+                System.out.println("getが非対応だから/order/checkにリダイレクト");
                 // 成功した場合、注文管理者のホームページにリダイレクト
-                response.sendRedirect(request.getContextPath() + "/sales_management");
+            	response.sendRedirect(request.getContextPath() + "/order/check");
 
             } catch (Exception e) {
                 e.printStackTrace(); // スタックトレースを出力
@@ -51,32 +52,30 @@ public class OrderDeleteServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // セッションからユーザの認証を確認
+		// セッションからユーザの認証を確認
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("user") != null) {
             try {
-                // セッションからUserBeanオブジェクトを取得
+            	System.out.println("/order/confirmのpost");
+            	// セッションからUserBeanオブジェクトを取得
                 UserBean user = (UserBean) session.getAttribute("user");
-
-                // リクエストパラメータから注文IDを取得
-                String ordersIdStr = request.getParameter("id");
-             // リクエストパラメータから注文数を取得
-                String quantityStr = request.getParameter("quantity");
                 
-                System.out.println(quantityStr);
-
-                // OrderServiceのインスタンス化
-                OrderService orderService = new OrderService();
+                boolean success_flag = false;
+                
+                
+//            	cart情報を取得
                 @SuppressWarnings("unchecked")
                 Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
-                System.out.println("new cart contents: " + cart);
+                
+//                もしカート情報がnullなら
                 if (cart == null || cart.isEmpty()) {
                 	// 対象ユーザーの注文を取ってくる処理
                 	OrderItemDto itemList = OrderService.list(user);
+//                	配列で注文情報をitemsに格納
                 	List<OrderItem> items = itemList.getOrderItemList();
+                    // セッションcartの初期化
                     cart = new HashMap<>();
-                    System.out.println("null cart contents: " + cart);
                  // itemListの情報をもとに注文情報をcartに格納
                     for (OrderItem item : items) {
                         int OrderId = item.getId();
@@ -85,24 +84,36 @@ public class OrderDeleteServlet extends HttpServlet {
                      // カートに数量をセット（既存の数量を上書き）
                         cart.put(OrderId, quantity);
                     }
-
+                   
                 }
+                
+                
+//             もし上記の初期化をしてもcart情報がnullならそもそも注文がない
+               if (cart == null || cart.isEmpty()) {
+            	   request.setAttribute("message", "注文商品が確認できませんでしたご確認ください。");
+            	   request.getRequestDispatcher("/jsp/order_confirm.jsp").forward(request, response);
+               }
+               
+               System.out.println("confirmサーブレット:cart情報は"+cart);
 
                 
-
-                // データベースの更新
-                orderService.cartDelete(user, ordersIdStr);
+//             以下はcart情報があるものとする
+               success_flag = OrderService.cartConfirm(cart,user,session);
+                
+                if(success_flag) {
+                	request.setAttribute("message", "注文完了しました");
+                	// 成功した場合、注文完了ページに遷移
+                    request.getRequestDispatcher("/jsp/order_confirm.jsp").forward(request, response);
+                }else {
+                	// 失敗した場合、注文完了(エラーページ)に遷移
+                	request.setAttribute("message", "注文途中にエラーが発生しました。"
+                			+ "対象商品が品切れの可能性がありますご確認ください。");
+                	// 成功した場合、注文完了ページに遷移
+                    request.getRequestDispatcher("/jsp/order_confirm.jsp").forward(request, response);
+                }
                 
                 
-             // セッションのカートからアイテムを更新
-                cart = orderService.cartUpdate(cart, ordersIdStr, quantityStr);
-                session.setAttribute("cart", cart);
                 
-             // 更新後のカート内容をログに出力
-                System.out.println("Updated cart contents: " + cart);
-
-                // 成功した場合、カート情報にリダイレクト
-                response.sendRedirect(request.getContextPath() + "/order/check");
 
             } catch (Exception e) {
                 e.printStackTrace(); // スタックトレースを出力

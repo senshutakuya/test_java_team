@@ -16,6 +16,13 @@
     <!-- logout_header.jspのインクルード -->
     <%@ include file="logout_header.jsp" %>
     <h1>商品一覧</h1>
+    <% 
+    String errorMessage = (String) session.getAttribute("error");
+    if (errorMessage != null) {
+        out.println("<p class='error'>" + errorMessage + "</p>");
+        session.removeAttribute("error"); // エラーメッセージをセッションから削除
+    }
+%>
     
     <% 
     if (itemList != null && itemList.getStockItemList() != null) {

@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <title>注文管理</title>
     <!-- jQueryライブラリをCDNから読み込む -->
- 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function updateQuantity(itemId) {
             var quantity = document.getElementById('quantity-' + itemId).value;
@@ -26,8 +26,7 @@
         }
     </script>
     <!-- 外部のcalculateTotal.jsファイルを読み込む -->
-	 <script src="<%= request.getContextPath() %>/js/calculateTotal.js"></script> 
-    
+    <script src="<%= request.getContextPath() %>/js/calculateTotal.js"></script>
 </head>
 <body>
     <h2>注文管理者</h2>    
@@ -50,8 +49,9 @@
         </tr>
         <% for (int i = 0; i < itemList.size(); i++) {
             OrderItem item = itemList.get(i);
-            int currentQuantity = item.getQuantity(); // 現在の注文数を取得
-            int cartQuantity = (cart != null && cart.containsKey(item.getId())) ? cart.get(item.getId()) : currentQuantity;
+            int cartQuantity = (cart != null && cart.containsKey(item.getId())) ? cart.get(item.getId()) : 1;
+            // デバッグ用に cartQuantity の値を出力
+            out.println("<!-- Item ID: " + item.getId() + ", cartQuantity: " + cartQuantity + " -->");
         %>
             <tr>
                 <form action="<%= request.getContextPath() %>/order/delete?id=<%= item.getId() %>" method="post">
@@ -60,9 +60,13 @@
                     <td>
                         <select id="quantity-<%= item.getId() %>" name="quantity" onchange="updateQuantity(<%= item.getId() %>)">
                             <% 
-                                for (int j = 1; j <= item.getStock(); j++) {
+                                int minQuantity = 1;
+                                int maxQuantity = item.getStock() + cartQuantity;
+                                for (int j = minQuantity; j <= maxQuantity; j++) {
                                     boolean selected = (j == cartQuantity);
-                                    out.println("<option value='" + j + "'" + (selected ? " selected" : "") + ">" + j + "</option>");
+                                    // デバッグ用に selected 属性を出力
+                                    out.println("<!-- Option Value: " + j + ", Selected: " + selected + " -->");
+                                    out.println("<option value='" + j + "'" + (selected ? " selected='selected'" : "") + ">" + j + "</option>");
                                 }
                             %>
                         </select>
@@ -81,7 +85,6 @@
     
     <h3 id="totalAmount">合計金額: 0 円</h3>
     
-    
     <form action="<%= request.getContextPath() %>/sales_management" method="get">
         <button type="submit">戻る</button>
     </form>
@@ -90,9 +93,9 @@
         <button type="submit">注文確定</button>
     </form>
 
- <!-- ページ読み込み時に合計金額を計算 -->
-	<script>
-    	calculateTotal()
+    <!-- ページ読み込み時に合計金額を計算 -->
+    <script>
+        calculateTotal();
     </script>
 </body>
 </html>

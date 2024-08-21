@@ -4,6 +4,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import com.kenshu.model.bean.StockItem;
 import com.kenshu.model.dto.StockItemDto;
@@ -225,7 +226,7 @@ public class StockItemDao {
             // トランザクションを開始
             conn.setAutoCommit(false);
 
-            // itemsテーブルからstock_idを取得するSQL
+            // itemsテーブルからitemIdを基にstock_idを取得するSQL
             String getStockIdSql = "SELECT stock_id FROM items WHERE id = ?";
             stmt = conn.prepareStatement(getStockIdSql);
 //            引数のidを基に対象のstock_idを取得
@@ -363,24 +364,42 @@ public class StockItemDao {
 
 	
 //	在庫から注文数を引く	
-	public void decrementStock(Integer stockId, int quantity) {
-	    String checkSql = "SELECT stock FROM stocks WHERE id = ?";
-	    String updateSql = "UPDATE stocks SET stock = ? WHERE id = ?";
+	public void decrementStock(Integer stockId, int quantity, Map<Integer, Integer> cart) {
+	    String checkStockSql = "SELECT stock FROM stocks WHERE id = ?";
+	    String getOrderIdSql = "SELECT id FROM orders WHERE stock_id = ?"; // orderId取得用SQL
+	    String updateStockSql = "UPDATE stocks SET stock = ? WHERE id = ?";
 	    
 	    try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
-	         PreparedStatement checkStmt = conn.prepareStatement(checkSql);
-	         PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+	         PreparedStatement checkStockStmt = conn.prepareStatement(checkStockSql);
+	         PreparedStatement getOrderIdStmt = conn.prepareStatement(getOrderIdSql);
+	         PreparedStatement updateStockStmt = conn.prepareStatement(updateStockSql)) {
 	        
 	        // 在庫がどの位あるのかチェック
-	        checkStmt.setInt(1, stockId);
-	        try (ResultSet rs = checkStmt.executeQuery()) {
+	        checkStockStmt.setInt(1, stockId);
+	        try (ResultSet rs = checkStockStmt.executeQuery()) {
 	            if (rs.next()) {
 	                int currentStock = rs.getInt("stock");
-	                if (currentStock >= quantity) {
+
+	                // stockIdを基にorderIdを取得
+	                getOrderIdStmt.setInt(1, stockId);
+	                Integer orderId = null;
+	                try (ResultSet orderRs = getOrderIdStmt.executeQuery()) {
+	                    if (orderRs.next()) {
+	                        orderId = orderRs.getInt("id");
+	                    } else {
+	                        throw new SQLException("指定されたstockIdに対応する注文が見つかりません。");
+	                    }
+	                }
+
+	                // cartから既存の注文数を取得
+	                int existingQuantity = cart.getOrDefault(orderId, 0);
+
+	                // 合計注文数が在庫を超えないかチェック
+	                if (currentStock >= existingQuantity + quantity) {
 	                    // 在庫が十分にある場合にのみ更新
-	                    updateStmt.setInt(1, currentStock - quantity);
-	                    updateStmt.setInt(2, stockId);
-	                    updateStmt.executeUpdate();
+	                    updateStockStmt.setInt(1, currentStock - quantity);
+	                    updateStockStmt.setInt(2, stockId);
+	                    updateStockStmt.executeUpdate();
 	                } else {
 	                    throw new SQLException("在庫が不足しています。");
 	                }
@@ -392,6 +411,7 @@ public class StockItemDao {
 	        e.printStackTrace();
 	    }
 	}
+
 
 	
 	
@@ -411,13 +431,113 @@ public class StockItemDao {
         }
     }
 
-    
+    public Integer findStockIdByOrderId(int orderId) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT stock_id FROM orders WHERE id = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("stock_id");
+                }
+            }
+        }
+        return null;  // 在庫IDが見つからなかった場合
+    }
 
-    
-    
-    
+    public Integer getStockByItemId(int itemId, Connection conn) throws SQLException {
+        String query = "SELECT s.stock FROM items i JOIN stocks s ON i.stock_id = s.id WHERE i.id = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, itemId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("stock");
+                } else {
+                    // アイテムIDに基づく在庫が存在しない場合
+                    return null;
+                }
+            }
+        }
+    }
 
+ // 在庫から注文数を引く
+    public void finally_decrementStock(Integer stockId, int quantity, Map<Integer, Integer> cart) {
+        String checkStockSql = "SELECT stock FROM stocks WHERE id = ?";
+        String getOrderIdSql = "SELECT id FROM orders WHERE stock_id = ?"; // orderId取得用SQL
+        String getOrderQuantitySql = "SELECT quantity FROM orders WHERE id = ?"; // orderIdに基づく注文数取得用SQL
+        String updateStockSql = "UPDATE stocks SET stock = ? WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement checkStockStmt = conn.prepareStatement(checkStockSql);
+             PreparedStatement getOrderIdStmt = conn.prepareStatement(getOrderIdSql);
+             PreparedStatement getOrderQuantityStmt = conn.prepareStatement(getOrderQuantitySql);
+             PreparedStatement updateStockStmt = conn.prepareStatement(updateStockSql)) {
+            
+            // 在庫がどのくらいあるのかチェック
+            checkStockStmt.setInt(1, stockId);
+            try (ResultSet rs = checkStockStmt.executeQuery()) {
+                if (rs.next()) {
+                    int currentStock = rs.getInt("stock");
+
+                    // stockIdからorderIdを取得
+                    getOrderIdStmt.setInt(1, stockId);
+                    Integer orderId = null;
+                    try (ResultSet orderRs = getOrderIdStmt.executeQuery()) {
+                        if (orderRs.next()) {
+                            orderId = orderRs.getInt("id");
+                        } else {
+                            throw new SQLException("指定された在庫IDに対応する注文が見つかりません。");
+                        }
+                    }
+
+                    // cartからorderIdに基づく既存の注文数を取得
+                    int existingQuantity = cart.getOrDefault(orderId, 0);
+
+                    // 注文テーブルから該当注文の数量を取得
+                    getOrderQuantityStmt.setInt(1, orderId);
+                    int ordersQuantity = 0;
+                    try (ResultSet orderQuantityRs = getOrderQuantityStmt.executeQuery()) {
+                        if (orderQuantityRs.next()) {
+                            ordersQuantity = orderQuantityRs.getInt("quantity");
+                        } else {
+                            throw new SQLException("指定された注文IDに対応する数量が見つかりません。");
+                        }
+                    }
+
+                    // 最終的な注文数を計算
+                    int finallyQuantity = existingQuantity - ordersQuantity;
+
+                    System.out.println("StockItemDaoのdecrementStock: 既存の注文数 existingQuantity の中身は " + existingQuantity);
+                    System.out.println("StockItemDaoのdecrementStock: 注文数 ordersQuantity の中身は " + ordersQuantity);
+                    System.out.println("StockItemDaoのdecrementStock: 在庫数 currentStock の中身は " + currentStock);
+                    System.out.println("StockItemDaoのdecrementStock: 最終的な引く数 finallyQuantity の中身は " + finallyQuantity);
+
+                    // 合計注文数が在庫を超えないかチェック
+                    if (currentStock >= finallyQuantity) {
+                        // 在庫が十分にある場合にのみ更新
+                        updateStockStmt.setInt(1, currentStock - finallyQuantity);
+                        updateStockStmt.setInt(2, stockId);
+                        updateStockStmt.executeUpdate();
+                    } else {
+                        throw new SQLException("在庫が不足しています。");
+                    }
+                } else {
+                    throw new SQLException("指定された在庫IDが見つかりません。");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+
+
+    
+
+    
+    
+
 
 
 

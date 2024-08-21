@@ -18,12 +18,11 @@ public class OrderUpdateQuantityServlet extends HttpServlet {
         HttpSession session = request.getSession();
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
-        if (cart != null) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            int quantity = Integer.parseInt(request.getParameter("quantity"));
-            cart.put(id, quantity); // カートの数量を更新
-            session.setAttribute("cart", cart); // 更新されたカートをセッションに再設定
-        }
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
+        cart.put(id, quantity); // カートの数量を更新
+        session.setAttribute("cart", cart); // 更新されたカートをセッションに再設定
 
         response.setStatus(HttpServletResponse.SC_OK); // 200 OK を返す
     }

@@ -139,4 +139,14 @@
     <servlet-name>OrderUpdateQuantityServlet</servlet-name>
     <url-pattern>/OrderUpdateQuantityServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>OrderConfirmServlet</display-name>
+    <servlet-name>OrderConfirmServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.OrderConfirmServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>OrderConfirmServlet</servlet-name>
+    <url-pattern>/OrderConfirmServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

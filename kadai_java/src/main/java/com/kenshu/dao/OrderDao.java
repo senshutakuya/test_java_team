@@ -11,6 +11,8 @@ import java.util.Map;
 import com.kenshu.model.bean.OrderItem;
 import com.kenshu.model.dto.OrderItemDto;
 
+import jakarta.servlet.http.HttpSession;
+
 public class OrderDao {
 
     // JDBCドライバとデータベースURL
@@ -233,6 +235,72 @@ public class OrderDao {
         result.put("stockId", stockId);
         return result;
     }
+
+
+    
+    
+    public void deleteUserOrderById(int userId, int orderId, HttpSession session, Connection conn) {
+        String sql = "DELETE FROM orders WHERE user_id = ? AND id = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // パラメータを設定
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, orderId);
+
+            // SQLクエリを実行
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                // 注文が削除された場合、セッションからカート情報を削除
+                session.removeAttribute("cart");
+                System.out.println("Order and cart session deleted successfully.");
+            } else {
+                System.out.println("No order found with the given user_id and orderId.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    
+//	itemIdを基にorderIdを渡す
+    public Integer getOrderIdByItemId(int itemsId, Connection conn) throws SQLException {
+        Integer orderId = null;
+        String query = "SELECT id FROM orders WHERE item_id = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, itemsId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                orderId = rs.getInt("id");
+            }
+        }
+        
+        return orderId;
+    }
+
+    public Integer getStockByItemId(int itemsId, Connection conn) {
+        Integer availableStock = null;
+        String sql = "SELECT s.stock FROM stocks s "
+                   + "JOIN items i ON s.id = i.stock_id "
+                   + "WHERE i.id = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, itemsId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    availableStock = rs.getInt("stock");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLエラーが発生しました: " + e.getMessage());
+        }
+
+        return availableStock;
+    }
+
 
 
 

@@ -9,6 +9,8 @@ import com.kenshu.dao.StockItemDao;
 import com.kenshu.model.bean.UserBean;
 import com.kenshu.model.dto.OrderItemDto;
 
+import jakarta.servlet.http.HttpSession;
+
 public class OrderService {
     private OrderDao orderDao = new OrderDao();
     private StockItemDao stockItemDao = new StockItemDao();
@@ -23,19 +25,25 @@ public class OrderService {
         }
     }
 
-    public void cartAdd(String itemsIdStr, UserBean user, String quantityStr) {
+    public void cartAdd(String itemsIdStr, UserBean user, String quantityStr, Map<Integer, Integer> cart) {
         try (Connection conn = stockItemDao.getConnection()) {
             conn.setAutoCommit(false);  // トランザクション開始
 
             try {
-                // アイテムID文字列を整数に変換
                 int itemId = Integer.parseInt(itemsIdStr);
-                // user_idを取得
                 int userId = user.getLoginid();
-                // アイテムIDに基づいて在庫IDを取得
                 Integer stockId = stockItemDao.findStockIdByItemId(itemId);
-                // 注文数量を整数に変換
                 int quantity = Integer.parseInt(quantityStr);
+                System.out.println("Service:itemIdは"+itemId);
+
+                Integer availableStock = stockItemDao.getStockByItemId(itemId, conn);
+                if (availableStock == null) {
+                    throw new RuntimeException("商品の在庫が見つかりません。");
+                }
+                
+                System.out.println("デバッグ:セッションcartの情報は" + cart);
+                System.out.println("デバッグ:現在の注文数は" + quantity);
+                System.out.println("デバッグ:現在の在庫数は" + availableStock);
 
                 // この関数で初回かどうかを判断
                 boolean isFirstOrder = OrderDao.isFirstOrder(userId, itemId);
@@ -49,7 +57,7 @@ public class OrderService {
                 }
 
                 // 在庫から注文数を引く
-                stockItemDao.decrementStock(stockId, quantity);
+                stockItemDao.decrementStock(stockId, quantity,cart);
 
                 conn.commit();  // トランザクションコミット
 
@@ -64,6 +72,7 @@ public class OrderService {
             System.err.println("接続エラーが発生しました: " + e.getMessage());
         }
     }
+
 
     // ユーザーごとの注文情報を取得して返す
     public static OrderItemDto list(UserBean user) {
@@ -113,11 +122,95 @@ public class OrderService {
      // 注文数の文字列を整数に変換
         int quantity = Integer.parseInt(ordersIdStr);
         
+        System.out.println("更新前のcart情報"+cart);
+        
         cart.put(orderId, quantity);
 //      カートからorderIdを基に対象のデータをセッションから削除
         cart.remove(orderId);
         
+        System.out.println("更新後のcart情報"+cart);
+        
         return cart;
 		
 	}
+
+
+
+	public static boolean cartConfirm(Map<Integer, Integer> cart, UserBean user, HttpSession session) {
+	    boolean success_flag = false;
+	    StockItemDao stockItemDao = new StockItemDao();
+	    OrderDao orderDao = new OrderDao();
+	    try (Connection conn = OrderDao.getConnection()) {
+	        
+	        conn.setAutoCommit(false);  // トランザクション開始
+	        
+	        try {
+	            for (Map.Entry<Integer, Integer> entry : cart.entrySet()) {
+	                int orderId = entry.getKey();
+	                int quantity = entry.getValue();
+	                
+	                // OrderIdを基にstocksテーブルを取得
+	                Integer stockId = stockItemDao.findStockIdByOrderId(orderId);
+	                
+	                if (stockId != null) {
+	                    // 対象の在庫商品を減らす
+	                	stockItemDao.finally_decrementStock(stockId, quantity, cart);
+	                    
+	                    // OrderIdを基に対象userのorderテーブルを削除
+	                    orderDao.deleteUserOrderById(user.getLoginid(), orderId, session, conn);
+	                } else {
+	                    throw new SQLException("在庫IDが見つかりません: Order ID = " + orderId);
+	                }
+	            }
+	            
+	            conn.commit();  // トランザクションコミット
+	            success_flag = true;
+	            
+	        } catch (SQLException e) {
+	            conn.rollback();  // トランザクションロールバック
+	            System.err.println("SQLエラーが発生しました: " + e.getMessage());
+	        } catch (NumberFormatException e) {
+	            conn.rollback();  // トランザクションロールバック
+	            System.err.println("数値の変換に失敗しました: " + e.getMessage());
+	        }
+	    } catch (SQLException | ClassNotFoundException e) {
+	        System.err.println("接続エラーが発生しました: " + e.getMessage());
+	    }
+	    
+	    return success_flag;
+	}
+
+	public Integer getOrderIdByItemId(int itemsId) {
+	    Integer orderId = null;
+	    try (Connection conn = OrderDao.getConnection()) {
+	        orderId = orderDao.getOrderIdByItemId(itemsId, conn);
+	    } catch (SQLException | ClassNotFoundException e) {
+	        System.err.println("接続エラーが発生しました: " + e.getMessage());
+	    }
+	    System.out.println("引数itemsIdは " + itemsId);
+	    System.out.println("戻り値のorderIdは " + orderId);
+	    return orderId;
+	}
+
+	public int getAvailableStock(int itemsId) {
+		Integer availableStock = null;
+		try (Connection conn = OrderDao.getConnection()) {
+			availableStock  = orderDao.getStockByItemId(itemsId, conn);
+	    } catch (SQLException | ClassNotFoundException e) {
+	        System.err.println("接続エラーが発生しました: " + e.getMessage());
+	    }
+	    System.out.println("引数itemsIdは " + itemsId);
+	    System.out.println("戻り値のavailableStockは " + availableStock);
+		return availableStock;
+	}
+
+
+
+	
+
+
+
 }
+	
+	
+
