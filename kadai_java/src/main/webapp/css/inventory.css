@@ -1,0 +1,26 @@
+@charset "UTF-8";
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+.header, .footer {
+    background-color: #dcdcdc;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.inventory-table th, .inventory-table td {
+    text-align: center;
+}
+
+.inventory-table th {
+    background-color: #f0f0f0;
+}
+
+.inventory-table td button {
+    width: 100%;
+}
