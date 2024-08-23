@@ -29,6 +29,13 @@
     <script src="<%= request.getContextPath() %>/js/calculateTotal.js"></script>
 </head>
 <body>
+		<% 
+        // キャッシュを無効化するレスポンスヘッダーの設定
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+        response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+        response.addHeader("Cache-Control", "no-store"); // HTTP 1.1.
+        response.setDateHeader("Expires", 0); // Proxies.
+	    %>
     <h2>注文管理者</h2>    
     <%@ include file="logout_header.jsp" %>
     <h1>カート商品一覧</h1>

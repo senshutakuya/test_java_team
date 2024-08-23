@@ -23,6 +23,12 @@ public class LogoutServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	// キャッシュを無効化
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+        response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+        response.addHeader("Cache-Control","no-store");
+        response.setDateHeader("Expires", 0); // Proxies.
+
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
             try {
@@ -38,6 +44,7 @@ public class LogoutServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
         }
     }
+
 
     /**
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)

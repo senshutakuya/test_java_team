@@ -149,4 +149,24 @@
     <servlet-name>OrderConfirmServlet</servlet-name>
     <url-pattern>/OrderConfirmServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description>セッションを無効化するサーブレット</description>
+    <display-name>ClearSessionServlet</display-name>
+    <servlet-name>ClearSessionServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.ClearSessionServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ClearSessionServlet</servlet-name>
+    <url-pattern>/ClearSessionServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>CheckSessionServlet</display-name>
+    <servlet-name>CheckSessionServlet</servlet-name>
+    <servlet-class>com.kenshu.controller.CheckSessionServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CheckSessionServlet</servlet-name>
+    <url-pattern>/CheckSessionServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

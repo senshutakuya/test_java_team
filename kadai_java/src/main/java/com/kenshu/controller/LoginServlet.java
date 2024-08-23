@@ -22,6 +22,7 @@ public class LoginServlet extends HttpServlet {
     	// キャッシュを無効化
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
         response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+        response.addHeader("Cache-Control","no-store");
         response.setDateHeader("Expires", 0); // Proxies.
         HttpSession session = request.getSession(false);
         System.out.println("メソッドgetです！セッション変数の中身は" + session);
