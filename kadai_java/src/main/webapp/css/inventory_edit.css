@@ -1,0 +1,67 @@
+/* style.css */
+
+/* 全体的なマージンとパディングのリセット */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+}
+
+/* コンテナのパディングとマージン */
+.container {
+    margin-top: 20px;
+    padding: 20px;
+}
+
+/* header内のformをインラインブロックに変更 */
+header form {
+    display: inline-block;
+    margin: 0px;
+}
+
+header button{
+    margin: 0px;
+}
+
+/* フォームのスタイル */
+form {
+    margin-top: 20px;
+    text-align: center;  /* フォームの中身を中央寄せ */
+}
+
+/* 入力フィールドの余白 */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* ボタンのスタイル */
+button {
+    margin-top: 10px;
+}
+
+/* ボタンを中央寄せするためのスタイル */
+.form-group button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* エラーメッセージのスタイル */
+.alert {
+    margin-top: 20px;
+}
+
+/* headerとfooterのスタイル */
+.header, .footer {
+    background-color: #dcdcdc;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+/* 背景色 */
+body {
+    background-color: #f8f9fa;
+}
+
+.card-header{
+	margin-top:-30px;
+}
