@@ -1,0 +1,26 @@
+@charset "UTF-8";
+/* 背景色 */
+body {
+    background-color: #f8f9fa;
+}
+
+/* header内のformをインラインブロックに変更 */
+header form {
+    display: inline-block;
+    margin: 0px;
+}
+
+header button{
+    margin: 0px;
+}
+
+/* headerとfooterのスタイル */
+.header, .footer {
+    background-color: #dcdcdc;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.mb-4{
+	text-align: center;
+}

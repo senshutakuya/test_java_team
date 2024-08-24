@@ -7,6 +7,7 @@
     <title>商品登録完了画面</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/inventory_confirm.css">
 </head>
 <body>
 	<% 
@@ -16,8 +17,16 @@
         response.addHeader("Cache-Control", "no-store"); // HTTP 1.1.
         response.setDateHeader("Expires", 0); // Proxies.
     %>
+    
 
     <div class="container mt-5">
+    	<div class="header d-flex justify-content-between align-items-center mb-4">
+			<h2>在庫管理者様</h2>
+		    <!-- logout_header.jspのインクルード -->
+			<div id="logout_button" >
+			    <%@ include file="logout_header.jsp" %>
+		    </div>
+		</div>
         <div class="row justify-content-center">
             <div class="col-md-6 text-center">
                 <div class="alert alert-success" role="alert">
