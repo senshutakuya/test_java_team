@@ -19,7 +19,7 @@ public class UserDao {
     static final String PASS = "password";
 
     // データベースにユーザーが登録されているか確認する処理(LoginServiceで使う)
-    public UserBean getUserByLoginIdAndPassword(int loginid, String password) {
+    public UserBean getUserByLoginIdAndPassword(String loginid, String password) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -33,7 +33,7 @@ public class UserDao {
             // SQLクエリを準備
             String sql = "SELECT * FROM users WHERE loginid = ? AND pass = ?";
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, loginid);
+            stmt.setString(1, loginid);
             stmt.setString(2, password);
 
             // SQLクエリを実行し、結果を取得
@@ -59,5 +59,39 @@ public class UserDao {
         }
 
         return user;
+    }
+
+ // 新しいユーザーを追加する処理
+    public void newUserAdd(String name, String loginid, String password, int authcode) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            // SQLクエリを準備
+            String insertSql = "INSERT INTO users (loginID, pass, name, authcode) VALUES (?, ?, ?, ?)";
+            stmt = conn.prepareStatement(insertSql);
+            stmt.setString(1, loginid);
+            stmt.setString(2, password);
+            stmt.setString(3, name);
+            stmt.setInt(4, authcode);
+
+            // SQLクエリを実行
+            stmt.executeUpdate();
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            // 接続をクローズ
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -28,13 +28,13 @@ public class OrderDao {
         return DriverManager.getConnection(DB_URL, USER, PASS);
     }
 
-    public static boolean isFirstOrder(int userId, int itemId) {
+    public static boolean isFirstOrder(String userId, int itemId) {
         String query = "SELECT COUNT(*) FROM orders WHERE user_id = ? AND item_id = ?";
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, userId);
+            stmt.setString(1, userId);
             stmt.setInt(2, itemId);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -50,13 +50,13 @@ public class OrderDao {
         return false;
     }
 
-    public static void addOrder(int userId, int itemId, Integer stockId, int quantity) {
+    public static void addOrder(String userId, int itemId, Integer stockId, int quantity) {
         String query = "INSERT INTO orders (user_id, item_id, stock_id, quantity) VALUES (?, ?, ?, ?)";
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, userId);
+            stmt.setString(1, userId);
             stmt.setInt(2, itemId);
             stmt.setInt(3, stockId);
             stmt.setInt(4, quantity);
@@ -91,7 +91,7 @@ public class OrderDao {
     
 
  // 既存の注文に数量を加算するメソッド
-    public static void addQuantityToOrder(int userId, int itemId, Integer stockId, int quantityToAdd) {
+    public static void addQuantityToOrder(String userId, int itemId, Integer stockId, int quantityToAdd) {
         String checkSql = "SELECT quantity FROM orders WHERE user_id = ? AND item_id = ? AND stock_id = ?";
         String updateSql = "UPDATE orders SET quantity = ? WHERE user_id = ? AND item_id = ? AND stock_id = ?";
         String insertSql = "INSERT INTO orders (user_id, item_id, stock_id, quantity) VALUES (?, ?, ?, ?)";
@@ -102,7 +102,7 @@ public class OrderDao {
              PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
 
             // 注文が既に存在するかチェック
-            checkStmt.setInt(1, userId);
+            checkStmt.setString(1, userId);
             checkStmt.setInt(2, itemId);
             checkStmt.setInt(3, stockId);
             try (ResultSet rs = checkStmt.executeQuery()) {
@@ -110,13 +110,13 @@ public class OrderDao {
                     // 注文が存在する場合は、数量を加算する
                     int currentQuantity = rs.getInt("quantity");
                     updateStmt.setInt(1, currentQuantity + quantityToAdd);
-                    updateStmt.setInt(2, userId);
+                    updateStmt.setString(2, userId);
                     updateStmt.setInt(3, itemId);
                     updateStmt.setInt(4, stockId);
                     updateStmt.executeUpdate();
                 } else {
                     // 注文が存在しない場合は、新しい注文を追加する
-                    insertStmt.setInt(1, userId);
+                    insertStmt.setString(1, userId);
                     insertStmt.setInt(2, itemId);
                     insertStmt.setInt(3, stockId);
                     insertStmt.setInt(4, quantityToAdd);
@@ -131,7 +131,7 @@ public class OrderDao {
 
     
     
-	public static OrderItemDto list(int userId) {
+	public static OrderItemDto list(String userId) {
 		Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -149,7 +149,7 @@ public class OrderDao {
                     "JOIN stocks s ON o.stock_id = s.id WHERE o.user_id = ?";
             stmt = conn.prepareStatement(sql);
 //          対象のuserIdをセット
-            stmt.setInt(1, userId);
+            stmt.setString(1, userId);
 
             // SQLクエリを実行し、結果を取得
             rs = stmt.executeQuery();
@@ -202,7 +202,7 @@ public class OrderDao {
 	
 
 	// orderIdを基にユーザーのカート情報を削除
-    public Map<String, Integer> deleteUserCartByItemid(int userId, int orderId, Connection conn) throws SQLException {
+    public Map<String, Integer> deleteUserCartByItemid(String userId, int orderId, Connection conn) throws SQLException {
         String selectSql = "SELECT quantity, stock_id FROM orders WHERE user_id = ? AND id = ?";
         String deleteSql = "DELETE FROM orders WHERE user_id = ? AND id = ?";
 
@@ -211,7 +211,7 @@ public class OrderDao {
 
         // まず削除対象のquantityとstockIdを取得する
         try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
-            selectStmt.setInt(1, userId);
+            selectStmt.setString(1, userId);
             selectStmt.setInt(2, orderId);
 
             try (ResultSet rs = selectStmt.executeQuery()) {
@@ -224,7 +224,7 @@ public class OrderDao {
 
         // 次に削除処理を行う
         try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
-            deleteStmt.setInt(1, userId);
+            deleteStmt.setString(1, userId);
             deleteStmt.setInt(2, orderId);
             deleteStmt.executeUpdate();
         }
@@ -239,12 +239,12 @@ public class OrderDao {
 
     
     
-    public void deleteUserOrderById(int userId, int orderId, HttpSession session, Connection conn) {
+    public void deleteUserOrderById(String string, int orderId, HttpSession session, Connection conn) {
         String sql = "DELETE FROM orders WHERE user_id = ? AND id = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             // パラメータを設定
-            pstmt.setInt(1, userId);
+            pstmt.setString(1, string);
             pstmt.setInt(2, orderId);
 
             // SQLクエリを実行

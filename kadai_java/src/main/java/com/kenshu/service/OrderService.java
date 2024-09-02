@@ -31,7 +31,7 @@ public class OrderService {
 
             try {
                 int itemId = Integer.parseInt(itemsIdStr);
-                int userId = user.getLoginid();
+                String userId = user.getLoginid();
                 Integer stockId = stockItemDao.findStockIdByItemId(itemId);
                 int quantity = Integer.parseInt(quantityStr);
                 System.out.println("Service:itemIdは"+itemId);
@@ -76,7 +76,7 @@ public class OrderService {
 
     // ユーザーごとの注文情報を取得して返す
     public static OrderItemDto list(UserBean user) {
-        int userId = user.getLoginid();
+        String userId = user.getLoginid();
         return OrderDao.list(userId);
     }
 
@@ -87,7 +87,7 @@ public class OrderService {
             
             try {
                 // userIdをセッションから取得
-                int userId = user.getLoginid();
+                String userId = user.getLoginid();
                 // アイテムID文字列を整数に変換
                 int orderId = Integer.parseInt(ordersIdStr);
 

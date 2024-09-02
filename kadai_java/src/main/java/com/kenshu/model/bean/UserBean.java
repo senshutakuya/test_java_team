@@ -1,21 +1,21 @@
 package com.kenshu.model.bean;
 
 public class UserBean {
-    private int loginid;
+    private String loginid;
     private String password;
     private int authcode;
 
-    public UserBean(int loginid, String password, int authcode) {
+    public UserBean(String loginid, String password, int authcode) {
         this.loginid = loginid;
         this.password = password;
         this.authcode = authcode;
     }
 
-    public int getLoginid() {
+    public String getLoginid() {
         return loginid;
     }
 
-    public void setLoginid(int loginid) {
+    public void setLoginid(String loginid) {
         this.loginid = loginid;
     }
 

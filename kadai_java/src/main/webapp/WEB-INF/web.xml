@@ -169,4 +169,14 @@
     <servlet-name>CheckSessionServlet</servlet-name>
     <url-pattern>/CheckSessionServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description>ユーザー新規登録</description>
+    <display-name>UserAdd</display-name>
+    <servlet-name>UserAdd</servlet-name>
+    <servlet-class>com.kenshu.controller.UserAdd</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UserAdd</servlet-name>
+    <url-pattern>/UserAdd</url-pattern>
+  </servlet-mapping>
 </web-app>

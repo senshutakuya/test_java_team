@@ -48,20 +48,20 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String loginidStr = request.getParameter("loginid");
+        String loginid = request.getParameter("loginid");
         String password = request.getParameter("password");
 
-        System.out.println("Received loginid: " + loginidStr);
+        System.out.println("Received loginid: " + loginid);
         System.out.println("Received password: " + password);
 
-        if (loginidStr == null || password == null || password.isEmpty()) {
+        if (loginid == null || password == null || password.isEmpty()) {
             request.setAttribute("error", "ログインIDとパスワードを入力してください");
             request.getRequestDispatcher("/jsp/Login.jsp").forward(request, response);
             return;
         }
 
         try {
-            int loginid = Integer.parseInt(loginidStr);
+
 
             UserBean user = loginService.login(loginid, password);
 

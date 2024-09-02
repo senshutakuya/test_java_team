@@ -57,6 +57,10 @@
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-block">Login</button>
                             </form>
+                            <br>
+                            <form action="<%= request.getContextPath() %>/user_add" method="get" class="d-inline">
+				                <button type="submit" class="btn btn-secondary btn-block">新規登録</button>
+				            </form>
                         </div>
                         <% 
                         String error = (String) request.getAttribute("error");
