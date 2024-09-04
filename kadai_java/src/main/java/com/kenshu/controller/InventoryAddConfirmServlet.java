@@ -2,6 +2,7 @@ package com.kenshu.controller;
 
 import java.io.IOException;
 
+import com.kenshu.model.bean.UserBean;
 import com.kenshu.service.StockService;
 
 import jakarta.servlet.ServletException;
@@ -49,6 +50,10 @@ public class InventoryAddConfirmServlet extends HttpServlet {
                 String stockName = request.getParameter("stock_name");
                 String stockPriceStr = request.getParameter("stock_price");
                 String stockNumberStr = request.getParameter("stock_number");
+                
+             // セッションからUserBeanオブジェクトを取得
+                UserBean user = (UserBean) session.getAttribute("user");
+                String userId = user.getLoginid();
 //            	一つでもnullなら
             	// 入力値のチェック
                 if (stockName == null || stockPriceStr == null || stockNumberStr == null ||
@@ -71,7 +76,7 @@ public class InventoryAddConfirmServlet extends HttpServlet {
                     return;
                 }
 //            	stockItemDtoのaddstockメソッドを呼び出す(引数に入力値を入れる)これによってデータベースに更新がかかる
-                stockService.add(stockName, stockPrice, stockNumber);
+                stockService.user_add(stockName, stockPrice, stockNumber, userId);
 //            	無事成功したなら
             	System.out.println("デバック、add_confirm.jspに移動");
                 request.getRequestDispatcher("/jsp/add_confirm.jsp").forward(request, response);

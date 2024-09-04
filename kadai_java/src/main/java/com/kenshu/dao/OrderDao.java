@@ -191,7 +191,7 @@ public class OrderDao {
 	
 	
 	
-//	itemIdを基にorderの情報を消す
+//	itemIdを基に在庫が削除されたらその在庫が登録されているorderの情報を消す
 	public void deleteOrderByItemId(int itemId, Connection conn) throws SQLException {
         String deleteSql = "DELETE FROM orders WHERE item_id = ?";
         try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {

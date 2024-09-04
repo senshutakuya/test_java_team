@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.kenshu.model.bean.StockItem;
+import com.kenshu.model.bean.UserBean;
 import com.kenshu.model.dto.StockItemDto;
 import com.kenshu.service.StockService;
 
@@ -39,7 +40,10 @@ public class InventoryServlet extends HttpServlet {
 //        もしセッションに値が入っていて且つuserという値が空ではなく入っていたなら
         if (session != null && session.getAttribute("user") != null) {
         	try {
-        		StockItemDto itemList = stockService.list();
+        		// セッションからUserBeanオブジェクトを取得
+                UserBean user = (UserBean) session.getAttribute("user");
+                String userId = user.getLoginid();
+        		StockItemDto itemList = stockService.userList(userId);
         		request.setAttribute("itemList", itemList);
         		List<StockItem> items = itemList.getStockItemList();
                 for (StockItem item : items) {

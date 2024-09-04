@@ -529,6 +529,242 @@ public class StockItemDao {
             e.printStackTrace();
         }
     }
+
+    public void userAddStock(String stockName, int stockPrice, int stockNumber, String user_id) {
+        Connection conn = null;
+        PreparedStatement stockStmt = null;
+        PreparedStatement itemStmt = null;
+        PreparedStatement userStockStmt = null;
+        ResultSet rs = null;
+
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            
+            // トランザクションを開始
+            conn.setAutoCommit(false);
+
+            // 在庫テーブルに在庫数を追加
+            String stockSql = "INSERT INTO stocks (stock) VALUES (?)";
+            stockStmt = conn.prepareStatement(stockSql, PreparedStatement.RETURN_GENERATED_KEYS);
+            stockStmt.setInt(1, stockNumber);
+            stockStmt.executeUpdate();
+
+            int stockId = 0;
+            // 自動生成された在庫IDを取得
+            try (ResultSet generatedKeys = stockStmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    stockId = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("在庫IDの取得に失敗しました");
+                }
+            }
+
+            // 商品テーブルに商品を追加
+            String itemSql = "INSERT INTO items (name, price, stock_id) VALUES (?, ?, ?)";
+            itemStmt = conn.prepareStatement(itemSql, PreparedStatement.RETURN_GENERATED_KEYS);
+            itemStmt.setString(1, stockName);
+            itemStmt.setInt(2, stockPrice);
+            itemStmt.setInt(3, stockId);
+            itemStmt.executeUpdate();
+
+            int itemId = 0;
+            // 自動生成された商品IDを取得
+            try (ResultSet generatedKeys = itemStmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    itemId = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("商品IDの取得に失敗しました");
+                }
+            }
+
+            // ユーザー在庫テーブルにデータを追加
+            String userStockSql = "INSERT INTO user_stocks (user_id, item_id, stock_id) VALUES (?, ?, ?)";
+            userStockStmt = conn.prepareStatement(userStockSql);
+            userStockStmt.setString(1, user_id);
+            userStockStmt.setInt(2, itemId);
+            userStockStmt.setInt(3, stockId);
+            userStockStmt.executeUpdate();
+
+            // トランザクションをコミット
+            conn.commit();
+
+            // 更新成功のメッセージを出力
+            System.out.println("在庫が正常に追加されました");
+
+
+
+        } catch (SQLException | ClassNotFoundException e) {
+            // エラーが発生した場合、トランザクションをロールバック
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+        } finally {
+            // リソースをクローズ
+            try {
+                if (rs != null) rs.close();
+                if (stockStmt != null) stockStmt.close();
+                if (itemStmt != null) itemStmt.close();
+                if (userStockStmt != null) userStockStmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public boolean userStockDelete(String userId, int id) throws ClassNotFoundException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        boolean exists = false;
+
+        try {
+            conn = getConnection();  // stockItemDao で利用する接続を取得
+            String userStockSql = "SELECT * FROM user_stocks WHERE user_id = ? AND item_id = ?";
+            stmt = conn.prepareStatement(userStockSql);
+            stmt.setString(1, userId);
+            stmt.setInt(2, id);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                exists = true;  // レコードが存在する場合、削除権限があると判断
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return exists;
+    }
+
+
+    public void deleteUserStock(String userId, int id, Connection conn) throws SQLException {
+        PreparedStatement stmt = null;
+
+        try {
+            String deleteSql = "DELETE FROM user_stocks WHERE user_id = ? AND item_id = ?";
+            stmt = conn.prepareStatement(deleteSql);
+            stmt.setString(1, userId);
+            stmt.setInt(2, id);
+            stmt.executeUpdate();
+        } finally {
+            if (stmt != null) stmt.close();
+        }
+    }
+
+    public Boolean userStock(String userId, int item_id) throws ClassNotFoundException {
+        Connection conn = null;
+        boolean hasPermission = false;
+
+        try {
+            // データベース接続を取得
+            conn = getConnection();
+
+            // SQLクエリを準備
+            String sql = "SELECT COUNT(*) FROM user_stocks WHERE user_id = ? AND item_id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, userId);
+            stmt.setInt(2, item_id);
+
+            // クエリを実行して結果を取得
+            ResultSet rs = stmt.executeQuery();
+
+            // 結果をチェック
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                // レコードが存在すれば権限があるとみなす
+                if (count > 0) {
+                    hasPermission = true;
+                }
+            }
+
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return hasPermission;
+    }
+
+    
+//    ユーザー事のitemListを表示する。
+    public StockItemDto userGetList(String userId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        StockItemDto stockItemDto = new StockItemDto();
+
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            // SQLクエリを準備
+            String sql = "SELECT i.id, i.name, i.price, s.stock " +
+                         "FROM items i " +
+                         "JOIN stocks s ON i.stock_id = s.id " +
+                         "JOIN user_stocks us ON us.item_id = i.id " +
+                         "WHERE us.user_id = ?";
+            
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, userId); // ユーザーIDをクエリに設定
+
+            // SQLクエリを実行し、結果を取得
+            rs = stmt.executeQuery();
+
+            // 結果をStockItemにマッピング
+            while (rs.next()) {
+                String id = rs.getString("id");
+                String name = rs.getString("name");
+                int price = rs.getInt("price");
+                int stock = rs.getInt("stock");
+                
+                StockItem item = new StockItem(id, name, price, stock);
+                stockItemDto.add(item);
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            // 接続をクローズ
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return stockItemDto;
+    }
+
+
+
 }
 
 

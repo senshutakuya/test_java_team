@@ -21,24 +21,37 @@ public class StockService {
         return stockItemDao.addStock(name, price, stock);
     }
 
-    public void delete_Inventory(int id) {
+    public void delete_Inventory(int id, String userId) {
         Connection conn = null;
+        boolean delete_flag = true;
+
         try {
             // データベース接続を取得
             conn = stockItemDao.getConnection();
             conn.setAutoCommit(false);  // トランザクション開始
+            
+            // userIdとitemIdを基にuser_stocksテーブルに登録されているかを確認し、権限を確認
+            delete_flag = stockItemDao.userStockDelete(userId, id);
+            
+            if (delete_flag) {
+                // itemIdからstock_idを取得
+                int stock_id = stockItemDao.findStockIdByItemId(id);
+                
+                // まず、関連するuser_stocksのレコードを削除
+                stockItemDao.deleteUserStock(userId, id, conn);
 
-            // itemidからstock_idを取得
-            int stock_id = stockItemDao.findStockIdByItemId(id);
+                // itemIdを基にordersテーブルの情報を削除
+                orderDao.deleteOrderByItemId(id, conn);
 
-            // item_idを基にordersテーブルの情報を削除
-            orderDao.deleteOrderByItemId(id, conn);
+                // itemsテーブルの情報もidを基に削除
+                stockItemDao.deleteItemByItemId(id, conn);
 
-            // stock_idからstocksテーブルの情報を削除
-            stockItemDao.deleteStockByStockId(stock_id, conn);
-
-            // itemsテーブルの情報もidを基に削除
-            stockItemDao.deleteItemByItemId(id, conn);
+                // 最後に、stock_idからstocksテーブルの情報を削除
+                stockItemDao.deleteStockByStockId(stock_id, conn);
+            } else {
+                // 権限がない場合、処理を終了
+                return;
+            }
 
             conn.commit();  // トランザクションコミット
         } catch (Exception e) {
@@ -61,4 +74,19 @@ public class StockService {
             }
         }
     }
+
+
+
+	public void user_add(String stockName, int stockPrice, int stockNumber, String user_id) {
+
+//		stockItemDaoのうせrAddStockを呼び出すだけ
+		stockItemDao.userAddStock(stockName, stockPrice, stockNumber, user_id);
+	}
+
+	public StockItemDto userList(String userId) {
+		// 在庫商品のリストを取得し、DTOとして返す
+        return stockItemDao.userGetList(userId);
+	}
+
+
 }

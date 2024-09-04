@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.kenshu.dao.StockItemDao;
 import com.kenshu.model.bean.StockItem;
+import com.kenshu.model.bean.UserBean;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/inventory/edit")
 public class InventoryEditServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private StockItemDao stockItemDao = new StockItemDao();
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,14 +29,37 @@ public class InventoryEditServlet extends HttpServlet {
         System.out.println("メソッドgetです！セッション変数の中身は" + session);
         
         String id = request.getParameter("id");
+        Boolean edit_flag = true;
         
         if (session != null && session.getAttribute("user") != null) {
             try {
                 if (id != null) {
                 	int item_id;
                 	item_id = Integer.parseInt(id);
+                	 // セッションからUserBeanオブジェクトを取得
+                    UserBean user = (UserBean) session.getAttribute("user");
+                    String userId = user.getLoginid();
+                    
+//                    権限がちゃんとあるかuser_stocksテーブルを使って確認
+                    edit_flag = stockItemDao.userStock(userId, item_id);
+                    System.out.println("編集権限は"+edit_flag);
+//                  権限がないなら
+                    if(!(edit_flag)) {
+                    	
+                    	System.out.println("デバッグ: 権限を持っていないので在庫管理のホーム画面にリダイレクト");
+                    	System.out.println("編集権限は"+edit_flag);
+                        response.sendRedirect(request.getContextPath() + "/inventory_home");
+                        return; // ここでメソッドを終了させる
+                    }
+                    
+//                    以降は権限があるものとして処理
+                    
+                    
+                    
+                    
                     // idに基づいて在庫情報を取得して、リクエスト属性に設定
                 	 StockItem stockItem = StockItemDao.getItemById(item_id);
+                	 
                 	 // SQLが完了次第セッションにitem_idを保存
                      session.setAttribute("editItemId", item_id);
                 	
@@ -61,6 +86,7 @@ public class InventoryEditServlet extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
+        Boolean edit_flag = true;
         if (session != null && session.getAttribute("user") != null) {
             try {
                 Integer itemId = (Integer) session.getAttribute("editItemId");
@@ -69,6 +95,24 @@ public class InventoryEditServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/inventory/edit");
                     return;
                 }
+                
+                // セッションからUserBeanオブジェクトを取得
+                UserBean user = (UserBean) session.getAttribute("user");
+                String userId = user.getLoginid();
+                
+//                権限がちゃんとあるかuser_stocksテーブルを使って確認
+                edit_flag = stockItemDao.userStock(userId, itemId);
+                System.out.println("編集権限は"+edit_flag);
+//              権限がないなら
+                if(!(edit_flag)) {
+                	
+                	System.out.println("デバッグ: 権限を持っていないので在庫管理のホーム画面にリダイレクト");
+                	System.out.println("編集権限は"+edit_flag);
+                    response.sendRedirect(request.getContextPath() + "/inventory_home");
+                    return; // ここでメソッドを終了させる
+                }
+                
+//                以降は権限があるものとして処理
 
                 String name = request.getParameter("name");
                 String priceStr = request.getParameter("price");

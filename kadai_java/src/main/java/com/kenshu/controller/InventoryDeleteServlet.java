@@ -2,6 +2,7 @@ package com.kenshu.controller;
 
 import java.io.IOException;
 
+import com.kenshu.model.bean.UserBean;
 import com.kenshu.service.StockService;
 
 import jakarta.servlet.ServletException;
@@ -61,8 +62,11 @@ public class InventoryDeleteServlet extends HttpServlet {
                 item_id = Integer.parseInt(items_id_str);
 //                インスタンス化
                 StockService stockService = new StockService();
+             // セッションからUserBeanオブジェクトを取得
+                UserBean user = (UserBean) session.getAttribute("user");
+                String userId = user.getLoginid();
 //                単一事にSQLをするのでサービスクラスで処理を行う
-                stockService.delete_Inventory(item_id);
+                stockService.delete_Inventory(item_id,userId);
 //                最終的にはそのまま在庫管理のホーム画面にリダイレクトする
             	response.sendRedirect(request.getContextPath() + "/inventory_home");
             } catch (Exception e) {
