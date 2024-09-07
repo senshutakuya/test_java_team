@@ -94,4 +94,51 @@ public class UserDao {
             }
         }
     }
+
+    
+    
+ // ログインIDを基にユーザーが存在するかチェックするメソッド
+    public boolean getUserByLoginId(String loginid) {
+        // SQLクエリを定義
+        String sql = "SELECT COUNT(*) FROM users WHERE loginID = ?";
+        
+        // データベース接続オブジェクト
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
+        try {
+            // JDBCドライバをロードし、データベースに接続
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            
+            // PreparedStatementにSQLクエリをセット
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, loginid);
+            
+            // クエリを実行し結果を取得
+            rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                // 結果が1以上ならユーザーが存在するので true を返す
+                return rs.getInt(1) > 0;
+            }
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            // リソースをクローズ
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        // 何か問題が発生した場合は false を返す
+        return false;
+    }
+
 }

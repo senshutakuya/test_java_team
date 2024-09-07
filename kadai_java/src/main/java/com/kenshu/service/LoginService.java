@@ -6,7 +6,7 @@ import com.kenshu.model.bean.UserBean;
 public class LoginService {
     private static UserDao userDao = new UserDao();
 
-    public UserBean login(String loginid, String password) {
+    public static UserBean login(String loginid, String password) {
         // データベースからユーザーを取得
         return userDao.getUserByLoginIdAndPassword(loginid, password);
     }
@@ -14,6 +14,7 @@ public class LoginService {
     public static String userAdd(String name, String loginid, String password, String authcodeStr) {
         StringBuilder validationMessage = new StringBuilder();
         int authcode;
+        boolean userCheck = true;
         
         try {
 //          authcodeをintがたに変換  
@@ -22,6 +23,14 @@ public class LoginService {
         	return "エラーが発生しました暫く待ってからやり直してください";
         }
 
+     // loginid でユーザーが既に存在しているかをチェック
+        userCheck = userDao.getUserByLoginId(loginid);
+        
+//        もしデータがあったら
+        if(userCheck) {
+        	System.out.println("登録データがあるから登録不可能だよ");
+        	return "既に登録されていますログインしてください";
+        }
 
         // バリデーションチェックを行い、エラーメッセージを取得
         boolean validation_flag = userAddValidateCheck(name, loginid, password, authcode, validationMessage);
