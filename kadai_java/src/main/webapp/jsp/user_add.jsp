@@ -18,10 +18,10 @@
 
                 <% 
                     // キャッシュを無効化するレスポンスヘッダーの設定
-                    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
-                    response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
-                    response.addHeader("Cache-Control", "no-store"); // HTTP 1.1.
-                    response.setDateHeader("Expires", 0); // Proxies.
+                    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                    response.setHeader("Pragma", "no-cache");
+                    response.addHeader("Cache-Control", "no-store");
+                    response.setDateHeader("Expires", 0);
 
                     // AddResult を取得
                     String addResult = (String) request.getAttribute("AddResult");
@@ -38,7 +38,7 @@
                     }
                 %>
 
-                <form action="<%= request.getContextPath() %>/user_add" method="post" class="mb-4">
+                <form action="<%= request.getContextPath() %>/user_add" method="post" class="mb-4" onsubmit="return validateForm()">
                     <div class="form-group">
                         <label for="name">Name:</label>
                         <input type="text" id="name" name="name" class="form-control" required>
@@ -68,6 +68,51 @@
             </div>
         </div>
     </div>
+
+    <!-- バリデーション用のJavaScript -->
+    <script>
+        function validateForm() {
+            var isValid = true;
+            var errorMessage = [];
+
+            // 名前のバリデーションチェック（20文字以内）
+            var name = document.getElementById("name").value;
+            if (name == null || name.length > 20) {
+                errorMessage.push("・名前は20文字以内にしてください");
+                isValid = false;
+            }
+
+            // ログインIDのバリデーションチェック（半角英数字、記号$と_のみ、8〜24文字）
+            var loginid = document.getElementById("loginid").value;
+            var loginidPattern = /^[a-zA-Z0-9$_]{8,24}$/;
+            if (!loginidPattern.test(loginid)) {
+                errorMessage.push("・ユーザIDは半角英数字(記号は$と_のみ)で、8文字以上24文字以内にしてください");
+                isValid = false;
+            }
+
+            // パスワードのバリデーションチェック（半角英数字、記号$と_のみ、8〜24文字）
+            var password = document.getElementById("password").value;
+            var passwordPattern = /^[a-zA-Z0-9$_]{8,24}$/;
+            if (!passwordPattern.test(password)) {
+                errorMessage.push("・パスワードは半角英数字(記号は$と_のみ)で、8文字以上24文字以内にしてください");
+                isValid = false;
+            }
+
+            // ロール（authcode）のバリデーションチェック（1か2であること）
+            var authcode = parseInt(document.getElementById("authcode").value);
+            if (!(authcode === 1 || authcode === 2)) {
+                errorMessage.push("・在庫管理者か注文管理者を選択してください");
+                isValid = false;
+            }
+
+            // エラーメッセージがあれば表示
+            if (!isValid) {
+                alert(errorMessage.join("\n"));
+            }
+
+            return isValid;  // バリデーションに合格した場合のみフォーム送信
+        }
+    </script>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
